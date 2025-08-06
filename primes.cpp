@@ -1,8 +1,18 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <fstream>
+#include <string>
 
 using namespace std;
+
+// Declaraciones adelantadas
+bool esPrimo(long long int numero);
+void imprimirPrimosHasta(int limite);
+void encontrarPrimoCercano(long long int numero);
+void encontrarPrimosGemelosHasta(int limite);
+void exportarPrimosComoEspiral(int limite, const string& archivo);
+void generarScriptPython(const string& archivoPython, const string& archivoDatos);
 
 // Funcion que determina si un numero es primo
 bool esPrimo(long long int numero) {
@@ -17,7 +27,6 @@ bool esPrimo(long long int numero) {
 // Imprime todos los numeros primos hasta un limite dado usando la Criba de Eratostenes
 void imprimirPrimosHasta(int limite) {
     vector<bool> esPrimo(limite + 1, true);
-
     esPrimo[0] = esPrimo[1] = false;
 
     for (int p = 2; p * p <= limite; ++p) {
@@ -68,6 +77,49 @@ void encontrarPrimosGemelosHasta(int limite) {
     cout << "\n";
 }
 
+// Exporta los primos como coordenadas polares (r = n, theta = n)
+void exportarPrimosComoEspiral(int limite, const string& archivo) {
+    ofstream salida(archivo);
+    if (!salida.is_open()) {
+        cout << "No se pudo abrir el archivo para escritura.\n";
+        return;
+    }
+
+    for (int n = 2; n <= limite; ++n) {
+        if (esPrimo(n)) {
+            double r = n;
+            double theta = n;
+            salida << r << " " << theta << "\n";
+        }
+    }
+
+    salida.close();
+    cout << "Archivo '" << archivo << "' generado con coordenadas polares de primos.\n";
+}
+
+// Genera un script Python para graficar los puntos
+void generarScriptPython(const string& archivoPython, const string& archivoDatos) {
+    ofstream py(archivoPython);
+    if (!py.is_open()) {
+        cout << "No se pudo crear el archivo de Python.\n";
+        return;
+    }
+
+    py << "import numpy as np\n";
+    py << "import matplotlib.pyplot as plt\n\n";
+    py << "r, theta = np.loadtxt('" << archivoDatos << "', unpack=True)\n";
+    py << "x = r * np.cos(theta)\n";
+    py << "y = r * np.sin(theta)\n\n";
+    py << "plt.figure(figsize=(6,6))\n";
+    py << "plt.scatter(x, y, s=1, c='blue')\n";
+    py << "plt.axis('equal')\n";
+    py << "plt.title('Espiral de primos')\n";
+    py << "plt.show()\n";
+
+    py.close();
+    cout << "Script '" << archivoPython << "' generado exitosamente.\n";
+}
+
 // Funcion principal con menu interactivo
 int main() {
     int opcion;
@@ -85,6 +137,8 @@ int main() {
             cout << "Ingresa el limite: ";
             cin >> limite;
             imprimirPrimosHasta(limite);
+            exportarPrimosComoEspiral(limite, "primos_polares.txt");
+            generarScriptPython("graficar_primos.py", "primos_polares.txt");
             break;
         }
         case 2: {
